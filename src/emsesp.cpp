@@ -980,7 +980,7 @@ bool EMSESP::add_device(const uint8_t device_id, const uint8_t product_id, const
             ESP_LOGE("EMS-ESP", "Factory failed to create device");
             return false;
         }  
-        emsdevices.push_back(emsdevice);
+        emsdevices.push_back(std::move(emsdevice));
         return false; // not found
     }
 
@@ -1036,7 +1036,7 @@ bool EMSESP::add_device(const uint8_t device_id, const uint8_t product_id, const
         ESP_LOGE("EMS-ESP", "Factory failed to create device");
         return false;
     }
-    emsdevices.push_back(emsdevice);
+    emsdevices.push_back(std::move(emsdevice));
 
     // assign a unique ID. Note that this is not actual unique after a restart as it's dependent on the order that devices are found
     emsdevices.back()->unique_id(++unique_id_count_);
