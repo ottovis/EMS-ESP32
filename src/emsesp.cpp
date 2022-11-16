@@ -974,8 +974,13 @@ bool EMSESP::add_device(const uint8_t device_id, const uint8_t product_id, const
     if (device_p == nullptr) {
         LOG_NOTICE(F("Unrecognized EMS device (deviceID 0x%02X, productID %d). Please report on GitHub."), device_id, product_id);
         std::string name("unknown");
-        emsdevices.push_back(
-            EMSFactory::add(DeviceType::GENERIC, device_id, product_id, version, name, DeviceFlags::EMS_DEVICE_FLAG_NONE, EMSdevice::Brand::NO_BRAND));
+        auto emsdevice = EMSFactory::add(DeviceType::GENERIC, device_id, product_id, version, name, DeviceFlags::EMS_DEVICE_FLAG_NONE, EMSdevice::Brand::NO_BRAND);
+        if (emsdevice == nullptr)
+        {
+            ESP_LOGE("EMS-ESP", "Factory failed to create device");
+            return false;
+        }  
+        emsdevices.push_back(emsdevice);
         return false; // not found
     }
 
@@ -1025,7 +1030,13 @@ bool EMSESP::add_device(const uint8_t device_id, const uint8_t product_id, const
     }
 
     LOG_DEBUG(F("Adding new device %s (deviceID 0x%02X, productID %d, version %s)"), name.c_str(), device_id, product_id, version);
-    emsdevices.push_back(EMSFactory::add(device_type, device_id, product_id, version, name, flags, brand));
+    auto emsdevice = EMSFactory::add(device_type, device_id, product_id, version, name, flags, brand);
+    if (emsdevice == nullptr)
+    {
+        ESP_LOGE("EMS-ESP", "Factory failed to create device");
+        return false;
+    }
+    emsdevices.push_back(emsdevice);
 
     // assign a unique ID. Note that this is not actual unique after a restart as it's dependent on the order that devices are found
     emsdevices.back()->unique_id(++unique_id_count_);
